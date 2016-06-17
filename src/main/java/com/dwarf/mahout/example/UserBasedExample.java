@@ -30,6 +30,13 @@ import org.slf4j.LoggerFactory;
  * + UserNeighborhood：基于UserSimilarity计算邻居User
  * + recommender：推荐的核心接口
  * 
+ * + Preference：用户喜好度，每一个代表一条记录
+ * 	+ GenericPreference
+ * 	+ BooleanPreference
+ * + PreferenceArray：存储Preference结构，节省内存设计
+ * 	+ GenericItemPreferenceArray
+ * 	+ GenericUserPreferenceArray
+ * 
  * SlopeOneRecommender:由于缺乏实际使用，在0.9.0被移除掉了
  * @author jiyu
  * 
@@ -45,16 +52,20 @@ public class UserBasedExample {
 		try {
 			long t1 = System.currentTimeMillis();
 			DataModel model = new FileDataModel(new File("src/main/resources/ratings.csv"));
+			//DataModel model = new MongoDBDataModel("120.25.163.237", 27017, "blog", "items", true, true, new SimpleDateFormat("EE MMM dd yyyy HH:mm:ss 'GMT'Z (zzz)", Locale.ENGLISH));
 			long t2 = System.currentTimeMillis();
 			logger.info("加载数据使用时间, {}", (t2 - t1));
 			UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
 			UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.1, similarity, model);
 			UserBasedRecommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
 			//给用户Param1推荐Param2个数的信息
-			List<RecommendedItem> recommendations = recommender.recommend(2, 10);
-			for (RecommendedItem recommendation : recommendations) {
-			  System.out.println(recommendation);
+			for(int i = 1; i < 10; i++){
+				List<RecommendedItem> recommendations = recommender.recommend(i, 10);
+				for (RecommendedItem recommendation : recommendations) {
+				  System.out.println(recommendation);
+				}
 			}
+			
 			long t3 = System.currentTimeMillis();
 			logger.info("剔除加载数据，计算需要时间, {}", (t3 - t2));
 		} catch (IOException e) {
